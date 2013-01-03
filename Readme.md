@@ -3,7 +3,7 @@ Header
 
 It's a simple plugin which is generated an epitech norme compatible header.
 
-![screenshot](screenshot.png)
+![screenshot](header/blob/master/screenshot.png)
 
 Usage
 -----

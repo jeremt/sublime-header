@@ -6,7 +6,21 @@ It's a simple plugin which is generated an epitech norme compatible header.
 Usage
 -----
 
-Just press ctrl+shift+h to generate a header at the top of the file.
+Just press __ctrl+shift+h__ to generate a header at the top of the file.
+
+TODO
+----
+
+### Must have
+
+- Update the header when the document is saved
+- Force en_US locale for datetime format
+- Add all languages
+- Find how to get the full name
+
+### Nice to have
+
+- Configuration file to create custom headers
 
 License
 -------

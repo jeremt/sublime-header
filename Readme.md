@@ -10,6 +10,11 @@ Usage
 
 Just press __ctrl+shift+h__ to generate a header at the top of the file.
 
+Install
+-------
+
+The plugin isnt finished yet. So if you wanna try it, [download it](https://github.com/jeremt/header/archive/master.zip). Then copy the containing folder into your SublimeText __Package__ folder (Preferences -> Browse Packages...).
+
 TODO
 ----
 

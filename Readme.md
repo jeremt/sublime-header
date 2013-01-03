@@ -5,15 +5,17 @@ It's a simple plugin which is generated an epitech norme compatible header.
 
 ![screenshot](https://github.com/jeremt/header/blob/master/screenshot.png?raw=true)
 
+Install
+-------
+
+[Download](https://github.com/jeremt/header/archive/master.zip) the plugin or clone the repository.
+
+Then copy the containing folder into your SublimeText __Package__ folder: _Preferences_ -> _Browse Packages_...
+
 Usage
 -----
 
 Just press __ctrl+shift+h__ to generate a header at the top of the file.
-
-Install
--------
-
-The plugin isnt finished yet. So if you wanna try it, [download it](https://github.com/jeremt/header/archive/master.zip). Then copy the containing folder into your SublimeText __Package__ folder: _Preferences_ -> _Browse Packages_...
 
 TODO
 ----

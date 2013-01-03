@@ -1,4 +1,3 @@
-
 import sublime, sublime_plugin, os, time, locale
 
 class HeaderCommand(sublime_plugin.TextCommand):
@@ -67,7 +66,6 @@ class HeaderCommand(sublime_plugin.TextCommand):
     header += comment[1] + " Started on  " + self.get_date() + " " + self.fullname + '\n'
     header += comment[1] + " Last update " + self.get_date() + " " + self.fullname + '\n'
     header += comment[2] + '\n'
-    header += '\n'
 
     return header
 

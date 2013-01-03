@@ -10,7 +10,7 @@ Install
 
 [Download](https://github.com/jeremt/header/archive/master.zip) the plugin or clone the repository.
 
-Then copy the containing folder into your SublimeText __Package__ folder: _Preferences_ -> _Browse Packages_...
+Then copy the containing folder into your SublimeText __Packages__ folder: _Preferences_ -> _Browse Packages_...
 
 Usage
 -----

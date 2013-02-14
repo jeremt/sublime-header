@@ -1,7 +1,7 @@
 Header
 ======
 
-It's a simple plugin which is generated an epitech norme compatible header.
+It's a simple plugin which generates an epitech norme compatible header.
 
 ![screenshot](https://github.com/jeremt/header/blob/master/screenshot.png?raw=true)
 

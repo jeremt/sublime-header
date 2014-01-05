@@ -3,8 +3,6 @@ Header
 
 It's a simple plugin which generates an epitech norme compatible header.
 
-![screenshot](screenshot.png)
-
 Install
 -------
 

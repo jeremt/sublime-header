@@ -22,10 +22,8 @@ TODO
 
 ### Must have
 
-- Update the header when the document is saved
 - Force en_US locale for datetime format
 - Add all languages
-- Find how to get the full name
 
 ### Nice to have
 

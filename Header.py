@@ -22,7 +22,7 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
         self.on_done(None)
     else:
       if (filename == "Makefile"):
-        region = self.window.active_view().find("##\n## Makefile for[\s\S]+in[\s\S]+\n## \n## Made by [\s\S]+\n## Login[\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n## \n## Started on[\s\S]+\n## Last update [\s\S]+\n##", 0)
+Last update Sun Jan  4 16:00:12 2015 Hugo Schoch
         if (region == None or region == sublime.Region(-1, -1)) :
           label = "Type project name: "
           self.window.show_input_panel(label, "", self.on_done, None, None)
@@ -102,16 +102,12 @@ class HeaderCommand(sublime_plugin.TextCommand):
 
   def get_date(self):
 
-    # TODO:
-    # - replace 03 by  3
-    # - get day and month in english
     loc = locale.getlocale()
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     date = time.strftime("%a %b  ")
     day = time.strftime("%d").lstrip('0');
     date = date + day + time.strftime(" %H:%M:%S %Y")
     locale.setlocale(locale.LC_ALL, loc)
-#    return time.strftime("%a %b  %d %H:%M:%S %Y")
     return date
 
   #

@@ -17,10 +17,10 @@ Just press __ctrl+shift+h__ to generate a header at the top of the file.
 
 TODO
 ----
+Note : Check .todo file
 
 ### Must have
 
-- Force en_US locale for datetime format
 - Add all languages
 
 ### Nice to have

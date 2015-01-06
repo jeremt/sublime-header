@@ -22,7 +22,6 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
         self.on_done(None)
     else:
       if (filename == "Makefile"):
-Last update Sun Jan  4 16:00:12 2015 Hugo Schoch
         if (region == None or region == sublime.Region(-1, -1)) :
           label = "Type project name: "
           self.window.show_input_panel(label, "", self.on_done, None, None)

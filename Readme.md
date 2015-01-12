@@ -10,6 +10,15 @@ Install
 
 Then copy the containing folder into your SublimeText __Packages__ folder: _Preferences_ -> _Browse Packages_...
 
+Important : You have to set the variable USER_NICKNAME with your Name.
+You can execute these commands into your shell
+Bash
+``export USER_NICKNAME="your name"
+
+Fish
+``set -xU USER_NICKNAME "your name"
+
+
 Usage
 -----
 

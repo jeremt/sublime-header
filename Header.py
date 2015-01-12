@@ -15,7 +15,7 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
   def run(self):
     filename = ntpath.basename(self.window.active_view().file_name())
     if (filename.endswith(".c") or filename.endswith(".h") or filename.endswith(".cpp")):
-      region = self.window.active_view().find(self.get_regex_request("", ""), 0)
+      region = self.window.active_view().find(self.get_regex_request(("" if filename.endswith(".cpp") else "cpp"), ""), 0)
       if (region == None or region == sublime.Region(-1, -1)) :
         label = "Type project name: "
         self.window.show_input_panel(label, "", self.on_done, None, None)
@@ -38,14 +38,20 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
     make_up = "## Last update[\s\S]+?\n##"
     c = "\/\*\n\*\*[\s\S]+for[\s\S]+in[\s\S]+\n\*\* \n\*\* Made by [\s\S]+\n\*\* Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\*\* \n\*\* Started on[\s\S]+\n\*\* Last update[\s\S]+?\n\*\/"
     c_up = "\*\* Last update[\s\S]+?\n\*\/"
+    cpp = "\/\/\n\/\/[\s\S]+for[\s\S]+in[\s\S]+\n\/\/ \n\/\/ Made by [\s\S]+\n\/\/ Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\/\/ \n\/\/ Started on[\s\S]+\n\/\/ Last update[\s\S]+?\n\/\/"
+    cpp_up = "\/\/ Last update[\s\S]+?\n\/\/"
     if (part == "Update"):
       if (type == "Makefile"):
         return make_up
+      elif (type == "cpp"):
+        return cpp_up
       else:
         return c_up
     else:
       if (type == "Makefile"):
         return make
+      elif (type == "cpp"):
+        return cpp
       else:
         return c
 
@@ -71,7 +77,7 @@ class HeaderCommand(sublime_plugin.TextCommand):
     comments['Default']      = ['  ', '  ', '  ']
     comments['JavaScript']   = ['/**', ' *', ' */']
     comments['CSS']          = ['/**', ' *', ' */']
-    comments['C++']          = ['/*', '**', '*/']
+    comments['C++']          = ['//', '//', '//']
     comments['C']          = ['/*', '**', '*/']
     comments['Python']       = ['#', '#', '#']
     comments['CoffeeScript'] = ['#', '#', '#']
@@ -88,7 +94,10 @@ class HeaderCommand(sublime_plugin.TextCommand):
     comments['Jade']         = ['//-', '//-', '//-']
     comments['Stylus']       = ['//', '//', '//']
 
-    return comments[self.view.settings().get('syntax').split('/')[1]]
+    if (self.get_file_name().endswith(".c")):
+      return comments['C']
+    else:
+      return comments[self.view.settings().get('syntax').split('/')[1]]
 
   #
   # Get file infos.
@@ -137,14 +146,20 @@ class HeaderCommand(sublime_plugin.TextCommand):
     make_up = "## Last update[\s\S]+?\n##"
     c = "\/\*\n\*\*[\s\S]+for[\s\S]+in[\s\S]+\n\*\* \n\*\* Made by [\s\S]+\n\*\* Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\*\* \n\*\* Started on[\s\S]+\n\*\* Last update[\s\S]+?\n\*\/"
     c_up = "\*\* Last update[\s\S]+?\n\*\/"
+    cpp = "\/\/\n\/\/[\s\S]+for[\s\S]+in[\s\S]+\n\/\/ \n\/\/ Made by [\s\S]+\n\/\/ Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\/\/ \n\/\/ Started on[\s\S]+\n\/\/ Last update[\s\S]+?\n\/\/"
+    cpp_up = "\/\/ Last update[\s\S]+?\n\/\/"
     if (part == "Update"):
       if (type == "Makefile"):
         return make_up
+      elif (type == "cpp"):
+        return cpp_up
       else:
         return c_up
     else:
       if (type == "Makefile"):
         return make
+      elif (type == "cpp"):
+        return cpp
       else:
         return c
 
@@ -172,9 +187,15 @@ class HeaderCommand(sublime_plugin.TextCommand):
   def is_already_here(self):
     file_name = self.get_file_name();
     region_c = self.view.find(self.get_regex_request("", ""), 0)
+    region_cpp = self.view.find(self.get_regex_request("cpp", ""), 0)
     region_make = self.view.find(self.get_regex_request("Makefile", ""), 0)
     if (file_name.endswith(".c") or file_name.endswith(".h")):
       if (region_c == None or region_c == sublime.Region(-1, -1)) :
+        return 0
+      else:
+        return 1
+    elif (file_name.endswith(".cpp")):
+      if (region_cpp == None or region_cpp == sublime.Region(-1, -1)) :
         return 0
       else:
         return 1
@@ -212,7 +233,7 @@ class HeaderCommand(sublime_plugin.TextCommand):
       self.view.insert(edit, 0, self.generate(project))
     else :
       if (file_name.endswith(".c") or file_name.endswith(".h") or filename.endswith(".cpp")):
-        self.view.replace(edit, self.view.find(self.get_regex_request("", "Update"), 0), self.new_date())
+        self.view.replace(edit, self.view.find(self.get_regex_request(("" if file_name.endswith(".cpp") else "cpp"), "Update"), 0), self.new_date())
       else:
         if (file_name == "Makefile"):
           self.view.replace(edit, self.view.find(self.get_regex_request("Makefile", "Update"), 0), self.new_date())

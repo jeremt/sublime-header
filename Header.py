@@ -14,8 +14,8 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
 
   def run(self):
     filename = ntpath.basename(self.window.active_view().file_name())
-    if (filename.endswith(".c") or filename.endswith(".h") or filename.endswith(".cpp")):
-      region = self.window.active_view().find(self.get_regex_request(("" if filename.endswith(".cpp") else "cpp"), ""), 0)
+    if (filename.endswith(".c") or filename.endswith(".h") or filename.endswith(".cpp") or filename.endswith(".hh")):
+      region = self.window.active_view().find(self.get_regex_request(("" if (filename.endswith(".cpp") or filename.endswith(".hh")) else "cpp"), ""), 0)
       if (region == None or region == sublime.Region(-1, -1)) :
         label = "Type project name: "
         self.window.show_input_panel(label, "", self.on_done, None, None)
@@ -96,6 +96,8 @@ class HeaderCommand(sublime_plugin.TextCommand):
 
     if (self.get_file_name().endswith(".c")):
       return comments['C']
+    elif (self.get_file_name().endswith(".hh")):
+      return comments['C++']
     else:
       return comments[self.view.settings().get('syntax').split('/')[1]]
 
@@ -142,26 +144,15 @@ class HeaderCommand(sublime_plugin.TextCommand):
 
   def get_regex_request(self, type, part):
 
-    make = "##\n## Makefile for[\s\S]+in[\s\S]+\n## \n## Made by [\s\S]+\n## Login[\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n## \n## Started on[\s\S]+\n## Last update [\s\S]+?\n##"
-    make_up = "## Last update[\s\S]+?\n##"
-    c = "\/\*\n\*\*[\s\S]+for[\s\S]+in[\s\S]+\n\*\* \n\*\* Made by [\s\S]+\n\*\* Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\*\* \n\*\* Started on[\s\S]+\n\*\* Last update[\s\S]+?\n\*\/"
-    c_up = "\*\* Last update[\s\S]+?\n\*\/"
-    cpp = "\/\/\n\/\/[\s\S]+for[\s\S]+in[\s\S]+\n\/\/ \n\/\/ Made by [\s\S]+\n\/\/ Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\/\/ \n\/\/ Started on[\s\S]+\n\/\/ Last update[\s\S]+?\n\/\/"
-    cpp_up = "\/\/ Last update[\s\S]+?\n\/\/"
+    comment = self.get_comment()
+    full_header = comment[0] + "\n" + comment[1] + "[\s\S]+for[\s\S]+in[\s\S]+\n" + comment[1] + " "
+    full_header += comment[1] + " Made by [\s\S]+\n" + comment[1] + " Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n"
+    full_header += comment[1] + " Started on[\s\S]+\n" + comment[1] + " Last update[\s\S]+?\n" + comment[2]
+    update_header = comment[1] + " Last update[\s\S]+?\n" + comment[1]
     if (part == "Update"):
-      if (type == "Makefile"):
-        return make_up
-      elif (type == "cpp"):
-        return cpp_up
-      else:
-        return c_up
+      return update_header
     else:
-      if (type == "Makefile"):
-        return make
-      elif (type == "cpp"):
-        return cpp
-      else:
-        return c
+      return full_header
 
   def generate(self, project):
 
@@ -232,8 +223,8 @@ class HeaderCommand(sublime_plugin.TextCommand):
     if (new == 0) :
       self.view.insert(edit, 0, self.generate(project))
     else :
-      if (file_name.endswith(".c") or file_name.endswith(".h") or filename.endswith(".cpp")):
-        self.view.replace(edit, self.view.find(self.get_regex_request(("" if file_name.endswith(".cpp") else "cpp"), "Update"), 0), self.new_date())
+      if (file_name.endswith(".c") or file_name.endswith(".h") or filename.endswith(".cpp") or filename.endswith(".hh")):
+        self.view.replace(edit, self.view.find(self.get_regex_request(("" if (file_name.endswith(".cpp") or filename.endswith(".hh")) else "cpp"), "Update"), 0), self.new_date())
       else:
         if (file_name == "Makefile"):
           self.view.replace(edit, self.view.find(self.get_regex_request("Makefile", "Update"), 0), self.new_date())

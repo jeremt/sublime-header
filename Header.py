@@ -3,7 +3,7 @@
 # Imports some modules.
 #
 
-import sublime, sublime_plugin, os, time, locale, ntpath
+import sublime, sublime_plugin, os, time, locale, ntpath, re
 from subprocess import call
 
 #
@@ -12,54 +12,47 @@ from subprocess import call
 
 class PromptHeaderCommand(sublime_plugin.WindowCommand):
 
-  def run(self):
-    filename = ntpath.basename(self.window.active_view().file_name())
-    if (filename.endswith(".c") or filename.endswith(".h") or filename.endswith(".cpp") or filename.endswith(".hh")):
-      region = self.window.active_view().find(self.get_regex_request(("" if (filename.endswith(".cpp") or filename.endswith(".hh")) else "cpp"), ""), 0)
-      if (region == None or region == sublime.Region(-1, -1)) :
-        label = "Type project name: "
-        self.window.show_input_panel(label, "", self.on_done, None, None)
-      else:
-        self.on_done(None)
-    else:
-      if (filename == "Makefile"):
-        region = self.window.active_view().find(self.get_regex_request("Makefile", ""), 0)
-        if (region == None or region == sublime.Region(-1, -1)) :
-          label = "Type project name: "
-          self.window.show_input_panel(label, "", self.on_done, None, None)
-        else:
-          self.on_done(None)
-    self.window.run_command("save")
-    pass
+	def	run(self):
+		settings = sublime.load_settings('sublime-header.sublime-settings')
+		syntax = self.get_syntax()
+		disallowed = settings.get("disallowed_languages")
+		allowed = settings.get("allowed_languages")
+		if (disallowed and len(disallowed) and syntax in disallowed) or (allowed and len(allowed) and not syntax in allowed):
+			self.window.run_command("save")
+			return
+		filename = ntpath.basename(self.window.active_view().file_name())
+		regex = self.get_regex_request()
+		region = self.window.active_view().find(self.get_regex_request(), 0)
+		if (region == None or region == sublime.Region(-1, -1)) :
+			label = "Type project name: "
+			self.window.show_input_panel(label, "", self.on_done, None, None)
+		else:
+			self.on_done(None)
+		self.window.run_command("save")
 
-  def get_regex_request(self, type, part):
+	def	get_syntax(self):
+		rawSyntax = self.window.active_view().settings().get("syntax")
+		rawTab = rawSyntax.split("/")
+		if (len(rawTab)):
+			rawSubTab = rawTab[(len(rawTab) - 1)].split(".")
+			if (len(rawSubTab)):
+				rawSecondSubTab = rawSubTab[0].split(" ")
+				if (len(rawSecondSubTab)):
+					language = rawSecondSubTab[0];
+					return language
+		return rawSyntax
 
-    make = "##\n## Makefile for[\s\S]+in[\s\S]+\n## \n## Made by [\s\S]+\n## Login[\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n## \n## Started on[\s\S]+\n## Last update [\s\S]+?\n##"
-    make_up = "## Last update[\s\S]+?\n##"
-    c = "\/\*\n\*\*[\s\S]+for[\s\S]+in[\s\S]+\n\*\* \n\*\* Made by [\s\S]+\n\*\* Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\*\* \n\*\* Started on[\s\S]+\n\*\* Last update[\s\S]+?\n\*\/"
-    c_up = "\*\* Last update[\s\S]+?\n\*\/"
-    cpp = "\/\/\n\/\/[\s\S]+for[\s\S]+in[\s\S]+\n\/\/ \n\/\/ Made by [\s\S]+\n\/\/ Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n\/\/ \n\/\/ Started on[\s\S]+\n\/\/ Last update[\s\S]+?\n\/\/"
-    cpp_up = "\/\/ Last update[\s\S]+?\n\/\/"
-    if (part == "Update"):
-      if (type == "Makefile"):
-        return make_up
-      elif (type == "cpp"):
-        return cpp_up
-      else:
-        return c_up
-    else:
-      if (type == "Makefile"):
-        return make
-      elif (type == "cpp"):
-        return cpp
-      else:
-        return c
+	def	get_regex_request(self):
+		regex = "[\s\S]*for[\s\S]*in[\s\S]*Made by[\s\S]"
+		regex += "[\s\S]*Login	 <[\s\S]*>[\s\S]"
+		regex += "[\s\S]*Started on	[\s\S]*Last update	[\s\S]*"
+		return regex
 
-  def on_done(self, text):
-    try:
-      self.window.active_view().run_command("header", {"project": text})
-    except ValueError:
-      pass
+	def	on_done(self, text):
+		try:
+			self.window.active_view().run_command("header", {"project": text})
+		except ValueError:
+			pass
 
 #
 # Main class: create the epitech-style header.
@@ -67,164 +60,168 @@ class PromptHeaderCommand(sublime_plugin.WindowCommand):
 
 class HeaderCommand(sublime_plugin.TextCommand):
 
-  #
-  # Get comment type according language.
-  #
+	#
+	# Get comment type according language.
+	#
 
-  def get_comment(self):
-    comments = {}
+	def	get_syntax(self):
+		rawSyntax = self.view.settings().get("syntax")
+		rawTab = rawSyntax.split("/")
+		if (len(rawTab)):
+			rawSubTab = rawTab[(len(rawTab) - 1)].split(".")
+			if (len(rawSubTab)):
+				rawSecondSubTab = rawSubTab[0].split(" ")
+				if (len(rawSecondSubTab)):
+					language = rawSecondSubTab[0];
+					return language
+		return rawSyntax
 
-    comments['Default']      = ['  ', '  ', '  ']
-    comments['JavaScript']   = ['/**', ' *', ' */']
-    comments['CSS']          = ['/**', ' *', ' */']
-    comments['C++']          = ['//', '//', '//']
-    comments['C']          = ['/*', '**', '*/']
-    comments['Python']       = ['#', '#', '#']
-    comments['CoffeeScript'] = ['#', '#', '#']
-    comments['Ruby']         = ['#', '#', '#']
-    comments['Makefile']     = ['##', '##', '##']
-    comments['Makefile Improved']     = ['##', '##', '##']
-    comments['Perl']         = ['#!/usr/local/bin/perl -w', '##', '##']
-    comments['ShellScript']  = ['#!/bin/sh', '##', '##']
-    comments['HTML']         = ['<!--', ' ', '-->']
-    comments['LaTeX']        = ['%%', '%%', '%%']
-    comments['Lisp']         = [';;', ';;', ';;']
-    comments['Java']         = ['//', '//', '//']
-    comments['PHP']          = ['#!/usr/local/bin/php\n<?php', '//', '//']
-    comments['Jade']         = ['//-', '//-', '//-']
-    comments['Stylus']       = ['//', '//', '//']
+	def	get_comment(self):
+		syntax = self.get_syntax()
 
-    if (self.get_file_name().endswith(".c")):
-      return comments['C']
-    elif (self.get_file_name().endswith(".hh")):
-      return comments['C++']
-    else:
-      return comments[self.view.settings().get('syntax').split('/')[1]]
+		comments = {}
 
-  #
-  # Get file infos.
-  #
+		comments['Default']				= ['	', '	', '	']
+		comments['JavaScript']			= ['/**', ' *', ' */']
+		comments['CSS']					= ['/**', ' *', ' */']
+		comments['C++']					= ['//', '//', '//']
+		comments['C']					= ['/*', '**', '*/']
+		comments['Python']				= ['#', '#', '#']
+		comments['CoffeeScript']		= ['#', '#', '#']
+		comments['Ruby']				= ['#', '#', '#']
+		comments['Makefile']			= ['##', '##', '##']
+		comments['Makefile Improved']	= ['##', '##', '##']
+		comments['Perl']				= ['#!/usr/local/bin/perl -w', '##', '##']
+		comments['ShellScript']			= ['#!/bin/sh', '##', '##']
+		comments['HTML']				= ['<!--', ' ', '-->']
+		comments['LaTeX']				= ['%%', '%%', '%%']
+		comments['Lisp']				= [';;', ';;', ';;']
+		comments['Java']				= ['//', '//', '//']
+		comments['PHP']					= ['#!/usr/local/bin/php\n<?php', '//', '//']
+		comments['Jade']				= ['//-', '//-', '//-']
+		comments['Stylus']				= ['//', '//', '//']
 
-  def get_file_infos(self):
-    full = self.view.file_name().split('/')
-    return [full.pop(), '/'.join(full)]
+		if syntax in comments:
+			return comments[syntax]
+		else:
+			return comments["Default"]
 
-  #
-  # Get email
-  #
+	#
+	# Get file infos.
+	#
 
-  def get_mail(self):
-    return "<" + os.environ['USER'] + "@epitech.net>"
+	def	get_file_infos(self):
+		full = self.view.file_name().split('/')
+		return [full.pop(), '/'.join(full)]
 
-  def get_name(self):
-    name = os.popen("cat /etc/passwd | grep " + os.environ['USER'] + " | cut -d: -f5 | cut -d, -f1").read()
-    res = name.replace('\n', '')
-    return res
+	#
+	# Get email
+	#
 
-  def get_file_name(self):
-    return ntpath.basename(self.view.file_name())
+	def	get_mail(self):
+		mail = self.settings.get("mail")
+		if (not mail):
+			return "<" + os.environ['USER'] + "@epitech.net>"
+		else:
+			return "<" + mail + ">"
 
-  #
-  # Get date epitech-formated (e.g Thu Jan  3 00:22:41 2013)
-  #
+	def	get_name(self):
+		name = self.settings.get("name")
+		if (not name):
+			name = os.popen("cat /etc/passwd | grep " + os.environ['USER'] + " | cut -d: -f5 | cut -d, -f1").read()
+			res = name.replace('\n', '')
+		else:
+			res = name
+		return res
 
-  def get_date(self):
+	def	get_file_name(self):
+		return ntpath.basename(self.view.file_name())
 
-    loc = locale.getlocale()
-    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    date = time.strftime("%a %b  ")
-    day = time.strftime("%d").lstrip('0');
-    date = date + day + time.strftime(" %H:%M:%S %Y")
-    locale.setlocale(locale.LC_ALL, loc)
-    return date
+	#
+	# Get date epitech-formated (e.g Thu Jan	3 00:22:41 2013)
+	#
 
-  #
-  # Generate header.
-  #
+	def	get_date(self):
+		loc = locale.getlocale()
+		locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+		date = time.strftime("%a %b	")
+		day = time.strftime("%d").lstrip('0');
+		date = date + day + time.strftime(" %H:%M:%S %Y")
+		locale.setlocale(locale.LC_ALL, loc)
+		return date
 
-  def get_regex_request(self, type, part):
+	#
+	# Generate header.
+	#
 
-    comment = self.get_comment()
-    full_header = comment[0] + "\n" + comment[1] + "[\s\S]+for[\s\S]+in[\s\S]+\n" + comment[1] + " "
-    full_header += comment[1] + " Made by [\s\S]+\n" + comment[1] + " Login [\s\S]+<[\s\S]+_[\s\S]@epitech.net>\n"
-    full_header += comment[1] + " Started on[\s\S]+\n" + comment[1] + " Last update[\s\S]+?\n" + comment[2]
-    update_header = comment[1] + " Last update[\s\S]+?\n" + comment[1]
-    if (part == "Update"):
-      return update_header
-    else:
-      return full_header
+	def	get_regex_request(self, update = False):
+		regex = "[\s\S]*for[\s\S]*in[\s\S]*Made by[\s\S]"
+		regex += "[\s\S]*Login	 <[\s\S]*>[\s\S]"
+		regex += "[\s\S]*Started on	[\s\S]"
+		regex += "[\s\S]*Last update	[\s\S]*"
+		update = " Last update	[\s\S]*?\n"
+		if (update):
+			comments = self.get_comment()
+			update = re.escape(comments[1]) + update + re.escape(comments[2])
+			return update
+		return regex
 
-  def generate(self, project):
+	def	generate(self, project):
 
-    # get some infos
-    header = ""
-    comment = self.get_comment()
-    f = self.get_file_infos()
+		# get some infos
+		if (not project):
+			project = ""
+		header = ""
+		comment = self.get_comment()
+		f = self.get_file_infos()
 
-    # generate the header
+		# generate the header
 
-    header += comment[0] + '\n'
-    header += comment[1] + " " + f[0] + " for " + project + " in " + f[1] + '\n'
-    header += comment[1] + " \n"
-    header += comment[1] + " Made by " + self.get_name() + '\n'
-    header += comment[1] + " Login   " + self.get_mail() + '\n'
-    header += comment[1] + " \n"
-    header += comment[1] + " Started on  " + self.get_date()+ " " + self.get_name() + '\n'
-    header += comment[1] + " Last update " + self.get_date() + " " + self.get_name() + '\n'
-    header += comment[2] + '\n'
+		header += comment[0] + '\n'
+		header += comment[1] + " " + f[0] + " for " + project + " in " + f[1] + '\n'
+		header += comment[1] + " \n"
+		header += comment[1] + " Made by " + self.get_name() + '\n'
+		header += comment[1] + " Login	 " + self.get_mail() + '\n'
+		header += comment[1] + " \n"
+		header += comment[1] + " Started on	" + self.get_date()+ " " + self.get_name() + '\n'
+		header += comment[1] + " Last update	" + self.get_date() + " " + self.get_name() + '\n'
+		header += comment[2] + '\n'
 
-    return header
+		return header
 
-  def is_already_here(self):
-    file_name = self.get_file_name();
-    region_c = self.view.find(self.get_regex_request("", ""), 0)
-    region_cpp = self.view.find(self.get_regex_request("cpp", ""), 0)
-    region_make = self.view.find(self.get_regex_request("Makefile", ""), 0)
-    if (file_name.endswith(".c") or file_name.endswith(".h")):
-      if (region_c == None or region_c == sublime.Region(-1, -1)) :
-        return 0
-      else:
-        return 1
-    elif (file_name.endswith(".cpp")):
-      if (region_cpp == None or region_cpp == sublime.Region(-1, -1)) :
-        return 0
-      else:
-        return 1
-    else:
-      if (file_name == "Makefile"):
-        if (region_make == None or region_make == sublime.Region(-1, -1)) :
-          return 0
-        else:
-          return 1
-      else:
-        return 0
+	def	is_already_here(self):
+		regex = self.get_regex_request(True)
+		region = self.view.find(regex, 0)
+		if (region == None or region == sublime.Region(-1, -1)) :
+			return False
+		else:
+			return True
 
-  def new_date(self):
-    header = ""
-    comment = self.get_comment()
-    header += comment[1] + " Last update " + self.get_date() + " " + self.get_name() + '\n'
-    header += comment[2]
-    return header
+	def	new_date(self):
+		header = ""
+		comment = self.get_comment()
+		header += comment[1] + " Last update	" + self.get_date() + " " + self.get_name() + '\n'
+		header += comment[2]
+		return header
 
-  def get_region_update_start(self):
-    size = len(self.view.full_line(0) + self.view.full_line(1) + self.view.full_line(2) + self.view.full_line(3) + self.view.full_line(4) + self.view.full_line(5) + self.view.full_line(6))
-    return size
+	def	get_region_update_start(self):
+		size = len(self.view.full_line(0) + self.view.full_line(1) + self.view.full_line(2) + self.view.full_line(3) + self.view.full_line(4) + self.view.full_line(5) + self.view.full_line(6))
+		return size
 
-  def get_region_update_end(self):
-    size = len(self.view.full_line(0) + self.view.full_line(1) + self.view.full_line(2) + self.view.full_line(3) + self.view.full_line(4) + self.view.full_line(5) + self.view.full_line(6) + self.new_date())
-    return size
-  #
-  # Run command.
-  #
+	def	get_region_update_end(self):
+		size = len(self.view.full_line(0) + self.view.full_line(1) + self.view.full_line(2) + self.view.full_line(3) + self.view.full_line(4) + self.view.full_line(5) + self.view.full_line(6) + self.new_date())
+		return size
+	#
+	# Run command.
+	#
 
-  def run(self, edit, project):
-    new = self.is_already_here()
-    file_name = self.get_file_name();
-    if (new == 0) :
-      self.view.insert(edit, 0, self.generate(project))
-    else :
-      if (file_name.endswith(".c") or file_name.endswith(".h") or filename.endswith(".cpp") or filename.endswith(".hh")):
-        self.view.replace(edit, self.view.find(self.get_regex_request(("" if (file_name.endswith(".cpp") or filename.endswith(".hh")) else "cpp"), "Update"), 0), self.new_date())
-      else:
-        if (file_name == "Makefile"):
-          self.view.replace(edit, self.view.find(self.get_regex_request("Makefile", "Update"), 0), self.new_date())
+	def	run(self, edit, project):
+		self.settings = sublime.load_settings('sublime-header.sublime-settings')
+		old = self.is_already_here()
+		file_name = self.get_file_name();
+		if (old) :
+			regex = self.get_regex_request(True)
+			region = self.view.find(regex, 0)
+			self.view.replace(edit, region, self.new_date())
+		else :
+			self.view.insert(edit, 0, self.generate(project))

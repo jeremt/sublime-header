@@ -1,43 +1,58 @@
-Header
-======
+#Sublime Header
 
 It's a simple plugin which generates an epitech norme compatible header.
 
-Install
--------
+##Install
+
+###Manual installation
 
 [Download](https://github.com/jeremt/header/archive/master.zip) the plugin or clone the repository.
 
 Then copy the containing folder into your SublimeText __Packages__ folder: _Preferences_ -> _Browse Packages_...
 
-Important : You have to set the variable USER_NICKNAME with your Name.
-You can execute these commands into your shell
-Bash
-``export USER_NICKNAME="your name"
+###With Package Control
 
-Fish
-``set -xU USER_NICKNAME "your name"
+Add https://github.com/jeremt/sublime-header as a new repository :
+    __ctrl+shift+p__ -> _Package Control: Add repository_
+
+Install it :
+    __ctrl+shift+p__ -> _Package Control: Install package_
+    "Sublime Header"
+
+You can configure the package by editing Sublime header settings :
+
+_Preferences_ -> _Package Settings_ -> _Sublime Header_ -> _Settings - User_
+
+````json
+{
+    "name" : "Your Name",
+    "mail" : "your.mail@mailbox.com",
+    "allowed_languages" :
+    [
+        "Python",
+        "C"
+    ],
+    "disallowed_languages" :
+    [
+        "JSON",
+        "Markdown"
+    ],
+}
+````
+
+(Sublime Header will check if current file syntax is in the disallowed list first, then check if it is in the allowed list. You can use one or both lists)
 
 
-Usage
------
+##Usage
 
 Just press __ctrl+shift+h__ to generate a header at the top of the file.
 
-TODO
-----
-Note : Check .todo file
 
-### Must have
-
+## TODO
 - Add all languages
-
-### Nice to have
-
 - Configuration file to create custom headers
 
-License
--------
+##License
 
 (The MIT License)
 
